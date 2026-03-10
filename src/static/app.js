@@ -941,6 +941,43 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeRangeFilter,
   };
 
+  // Dark mode toggle
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+  const darkModeIcon = document.getElementById("dark-mode-icon");
+
+  function applyDarkMode(enabled) {
+    if (enabled) {
+      document.body.classList.add("dark-mode");
+      darkModeIcon.textContent = "☀️";
+      darkModeToggle.title = "Switch to light mode";
+      darkModeToggle.setAttribute("aria-label", "Switch to light mode");
+    } else {
+      document.body.classList.remove("dark-mode");
+      darkModeIcon.textContent = "🌙";
+      darkModeToggle.title = "Switch to dark mode";
+      darkModeToggle.setAttribute("aria-label", "Switch to dark mode");
+    }
+  }
+
+  // Load saved preference
+  let savedDarkMode = false;
+  try {
+    savedDarkMode = localStorage.getItem("darkMode") === "true";
+  } catch (e) {
+    // localStorage may be unavailable in some browsers/settings
+  }
+  applyDarkMode(savedDarkMode);
+
+  darkModeToggle.addEventListener("click", () => {
+    const isDark = document.body.classList.contains("dark-mode");
+    applyDarkMode(!isDark);
+    try {
+      localStorage.setItem("darkMode", !isDark);
+    } catch (e) {
+      // localStorage may be unavailable in some browsers/settings
+    }
+  });
+
   // Initialize app
   checkAuthentication();
   initializeFilters();

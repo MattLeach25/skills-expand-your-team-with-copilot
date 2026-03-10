@@ -569,6 +569,25 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-buttons">
+        <span class="share-label">Share:</span>
+        <button class="share-btn share-twitter tooltip" data-activity="${name}" aria-label="Share on Twitter/X">
+          X
+          <span class="tooltip-text">Share on Twitter/X</span>
+        </button>
+        <button class="share-btn share-facebook tooltip" data-activity="${name}" aria-label="Share on Facebook">
+          fb
+          <span class="tooltip-text">Share on Facebook</span>
+        </button>
+        <button class="share-btn share-email tooltip" data-activity="${name}" aria-label="Share via Email">
+          ✉
+          <span class="tooltip-text">Share via Email</span>
+        </button>
+        <button class="share-btn share-copy tooltip" data-activity="${name}" aria-label="Copy link">
+          🔗
+          <span class="tooltip-text">Copy link</span>
+        </button>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -587,7 +606,68 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Add click handlers for share buttons
+    activityCard.querySelector(".share-twitter").addEventListener("click", () => {
+      shareActivity("twitter", name, details);
+    });
+    activityCard.querySelector(".share-facebook").addEventListener("click", () => {
+      shareActivity("facebook", name, details);
+    });
+    activityCard.querySelector(".share-email").addEventListener("click", () => {
+      shareActivity("email", name, details);
+    });
+    activityCard.querySelector(".share-copy").addEventListener("click", (e) => {
+      shareActivity("copy", name, details, e.currentTarget);
+    });
+
     activitiesList.appendChild(activityCard);
+  }
+
+  // Function to handle sharing an activity
+  function shareActivity(platform, name, details, buttonEl) {
+    const pageUrl = window.location.href.split("?")[0];
+    const schedule = details.schedule || formatSchedule(details);
+    const shareText = `Check out "${name}" at Mergington High School! ${schedule}`;
+
+    if (platform === "twitter") {
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else if (platform === "facebook") {
+      const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(shareText)}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else if (platform === "email") {
+      const subject = encodeURIComponent(`Join me for ${name} at Mergington High School!`);
+      const body = encodeURIComponent(`${shareText}\n\nLearn more: ${pageUrl}`);
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    } else if (platform === "copy") {
+      const copyText = `${shareText} ${pageUrl}`;
+      navigator.clipboard.writeText(copyText).then(() => {
+        if (buttonEl) {
+          const originalText = buttonEl.innerHTML;
+          buttonEl.textContent = "✓";
+          setTimeout(() => {
+            buttonEl.innerHTML = originalText;
+          }, 1500);
+        }
+      }).catch(() => {
+        // Fallback for browsers that don't support clipboard API
+        const textarea = document.createElement("textarea");
+        textarea.value = copyText;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (buttonEl) {
+          const originalText = buttonEl.innerHTML;
+          buttonEl.textContent = "✓";
+          setTimeout(() => {
+            buttonEl.innerHTML = originalText;
+          }, 1500);
+        }
+      });
+    }
   }
 
   // Event listeners for search and filter
